@@ -98,8 +98,6 @@ def store_analytics_data(view_name, minioClient):
         csv_bytes = df.to_csv().encode('utf-8')
         csv_buffer = BytesIO(csv_bytes)
 
-        #create bucket
-        minioClient.make_bucket('companies')
         # store file in MinIO
         minioClient.put_object('companies',
                        'customer_airbnb_analytics/customers_by_accomodation.csv',
