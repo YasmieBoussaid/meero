@@ -22,7 +22,7 @@ def format_customer_csv_data(row_data:str):
     else:
         dict_data = {
             "id" : data[0],
-            "adress" : data[1],
+            "adress" : data[1].replace('Ã©', 'é').replace('Ã¨', 'è').replace('Ãª', 'ê').replace('Ã´', 'ô').replace('Ã', 'à'),
             "created_at" : data[4]
         }
         try:
@@ -79,6 +79,8 @@ def customer_data_cleaning(raw_customer_data : list):
     for raw_data in raw_customer_data:
         # decode th data
         detected_encoding = chardet.detect(raw_data)
+        if detected_encoding == 'ISO-8859-1':
+            detected_encoding = 'UTF-8'
         csv_content = raw_data.decode(detected_encoding["encoding"])
 
         #delete header line

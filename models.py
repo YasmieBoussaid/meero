@@ -1,3 +1,5 @@
+from uuid import uuid4
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, Date, Float, BIGINT
 
@@ -5,9 +7,12 @@ Base = declarative_base()
 
 class AirbnbListing(Base):
     __tablename__ = 'airbnb_listings'
-    id = Column(Integer, primary_key=True)
+    uuid = Column(UUID(as_uuid=True), default=uuid4, primary_key=True)
+    id = Column(Integer)
     name = Column(String)
     host_id = Column(Integer)
+    address_line_1 = Column(String)
+    address_line_2 = Column(String)
     neighbourhood = Column(String)
     city = Column(String)
     country = Column(String)
@@ -15,7 +20,7 @@ class AirbnbListing(Base):
     room_price = Column(Integer)
     minimum_nights = Column(Integer)
     number_of_reviews = Column(Integer)
-    last_review = Column(String)
+    last_review = Column(Date)
     reviews_per_month = Column(Float)
     calculated_host_listings_count = Column(Integer)
     availability_365 = Column(Integer)

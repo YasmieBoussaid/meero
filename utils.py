@@ -50,3 +50,17 @@ def get_zip_by_city(city:str):
         return zip
     return None
 
+def get_address_by_coordinates(lat, lon):
+    # Set zoom to a higher value for more detailed information
+    url = f'https://nominatim.openstreetmap.org/reverse?lat={lat}&lon={lon}&format=json&accept-language=fr&zoom=18'
+    try:
+        result = requests.get(url=url)
+        result_json = result.json()
+        address = result_json['display_name'].split(',')
+        return address
+    except Exception as e:
+        print(f"Error: {e}")
+        return None
+    
+#print(get_address_by_coordinates(48.89643232958665,2.32963906815353))
+	

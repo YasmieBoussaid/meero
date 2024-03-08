@@ -3,3 +3,4 @@ psycopg2
 requests
 minio
 chardet
+pandas
