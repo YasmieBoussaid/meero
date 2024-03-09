@@ -1,7 +1,10 @@
-from sqlalchemy import select, Table, MetaData
-import pandas as pd
-from io import BytesIO
 from config import engine, BUCKET_NAME
+
+from sqlalchemy import select, Table, MetaData
+from io import BytesIO
+from datetime import datetime
+
+import pandas as pd
 
 def store_analytics_data(view_name : str, minioClient):
     """
@@ -27,8 +30,10 @@ def store_analytics_data(view_name : str, minioClient):
         csv_buffer = BytesIO(csv_bytes)
 
         # store file in MinIO
+        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        file_name = f'customers_accommodation_by_city_{timestamp}.csv'
         minioClient.put_object(BUCKET_NAME,
-                       'customers_accomodation_by_city.csv',
+                        file_name,
                         data=csv_buffer,
                         length=len(csv_bytes),
                         content_type='application/csv')
