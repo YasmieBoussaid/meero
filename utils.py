@@ -1,4 +1,5 @@
 from constants import LAPOSTE_API
+
 import requests
 
 def get_city_zip_data(**kwargs):
@@ -50,7 +51,7 @@ def get_zip_by_city(city:str):
         return zip
     return None
 
-def get_address_by_coordinates(lat, lon):
+def get_address_by_coordinates(lat : float, lon : float):
     """
     This function calls openstreetmap API to convert latitude and longitude coordiantes to addresses.
     Input:

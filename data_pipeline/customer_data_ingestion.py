@@ -1,8 +1,10 @@
+from data_pipeline.models import Customer
+from utils import get_city_by_zip, get_zip_by_city
+from config import BUCKET_NAME
+
 import re
 import chardet
 import logging
-from config import BUCKET_NAME
-from utils import get_city_by_zip, get_zip_by_city
 
 def format_customer_csv_data(row_data:str):
     """
@@ -106,3 +108,39 @@ def customer_data_cleaning(raw_customer_data : list):
         all_customers.extend(customer_dicts)
         
     return all_customers
+
+
+def customer_data_pipeline(minioClient,Session):
+    """
+    This function launches the customer data ingestion process to retrieve csv files from MinIO and store the data
+    in our database after cleaning
+    Input:
+        minioClient : Minio => Minio object
+    Return:
+        None
+    """
+    
+    # get raw data from MinIO
+    logging.info("Extracting data from MinIO starting...")
+    raw_customer_data = get_customer_raw_data(minioClient)
+    
+    # Clean the raw data
+    logging.info("Cleaning customer data starting")
+    cleaned_customer_data = customer_data_cleaning(raw_customer_data)
+
+    # Store the cleaned data in customer table
+    logging.info("Loading customer data in SQL DB starting")
+    session = Session()
+    try:
+        for customer_row in cleaned_customer_data:
+        
+            session.add(Customer(**customer_row))
+            session.commit()
+        logging.info("Succesfully added customer data in database.")
+
+    except Exception as e:
+            session.rollback()
+            logging.info(f"Error: {e}")
+
+    finally:
+            session.close()

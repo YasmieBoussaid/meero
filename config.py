@@ -1,5 +1,6 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+
 import os
 
 DB_URI = os.getenv('DB_URI', 'postgresql://yasmine:password@postgres:5432/concierge_cie')

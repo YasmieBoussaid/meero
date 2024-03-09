@@ -1,10 +1,13 @@
+from data_pipeline.models import AirbnbListing
 from constants import AIRBNB_API
 from utils import get_address_by_coordinates
+
 import requests
 import logging
 
 
-def get_airbnb_listings_raw_data(limit:int = 100, offset:int = 0,max_limit=2000,**kwargs):
+
+def get_airbnb_listings_raw_data(limit:int = 100, offset:int = 0,max_limit:int =2000,**kwargs):
     """
         This function extracts the airbnb listing from opendatasoft API.
         Input : 
@@ -61,3 +64,37 @@ def airbnb_data_cleaning(airbnb_listing_object):
     del airbnb_listing_object['column_20']
 
     return airbnb_listing_object
+
+def airbnb_data_pipeline(Session):
+    """
+    This function launches the airbnb data ingestion process to retrieve json data from Opendatasoft API
+    and store it in the database.
+    Input:
+        Session : db Session initializer
+    Return:
+        None
+    """
+    # get raw data from Opendatasoft
+    logging.info("Airbnb data pipeline starting...")
+    raw_airbnb_data = get_airbnb_listings_raw_data(refine='column_19:France')
+
+    # Clean the raw data
+    logging.info("Airbnb data cleaning starting...")
+    cleaned_airbnb_data = list(map(airbnb_data_cleaning, raw_airbnb_data))
+
+    # Store data in Airbnb table
+    logging.info("Loading Airbnb data in database starting...")
+    db_session = Session()
+    try:
+        for airbnb_row in cleaned_airbnb_data:
+        
+            db_session.add(AirbnbListing(**airbnb_row))
+            db_session.commit()
+        logging.info("Succesfully added Airbnb data in database")
+
+    except Exception as e:
+        db_session.rollback()
+        logging.info(f"Error: {e}")
+
+    finally:
+        db_session.close() 
