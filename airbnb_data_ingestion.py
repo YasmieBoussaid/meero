@@ -1,6 +1,7 @@
 from constants import AIRBNB_API
 from utils import get_address_by_coordinates
 import requests
+import logging
 
 
 def get_airbnb_listings_raw_data(limit:int = 100, offset:int = 0,max_limit=2000,**kwargs):
@@ -14,6 +15,7 @@ def get_airbnb_listings_raw_data(limit:int = 100, offset:int = 0,max_limit=2000,
         Return:
             airbnb_listings : list => list of airbnb listing objects
     """
+    logging.info("Calling Opendatasoft API for Airbnb lstings data.")
     airbnb_listings = []
     url = f"{AIRBNB_API}?limit={limit}&offset={offset}"
     if kwargs:
@@ -37,6 +39,12 @@ def get_airbnb_listings_raw_data(limit:int = 100, offset:int = 0,max_limit=2000,
 
 def airbnb_data_cleaning(airbnb_listing_object):
     """
+        This function cleans and transforms a single Airbnb listing raw data.
+        It converts coordinates to addresses and rename meaningless field names.
+        Input : 
+            airbnb_listing_object : list => Airbnb listing raw data
+        Return:
+            airbnb_listing_object : list =>  Airbnb cleaned data
     """
     airbnb_listing_object['room_price'] = airbnb_listing_object['column_10']
     airbnb_listing_object['country'] = airbnb_listing_object['column_19']

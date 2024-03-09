@@ -1,6 +1,6 @@
 import re
 import chardet
-
+import logging
 from config import BUCKET_NAME
 from utils import get_city_by_zip, get_zip_by_city
 
@@ -18,7 +18,7 @@ def format_customer_csv_data(row_data:str):
     data  = re.split(pattern, row_data)
     data = [item.strip() for item in data]
     if len(data) != 5:
-        print(row_data)
+        logging.info(f"Errored data {row_data}")
     else:
         dict_data = {
             "id" : data[0],
@@ -29,7 +29,7 @@ def format_customer_csv_data(row_data:str):
             if int(data[3]):
                 dict_data['zip'] = int(data[3])
                 if data[2] == '':
-                    # extract city name
+                    # Call API to extract city name if it doesn't exist
                     dict_data['city'] = get_city_by_zip(data[3])
                 else:
                    dict_data['city'] = data[2] 
@@ -37,6 +37,7 @@ def format_customer_csv_data(row_data:str):
         except:
             if len(data[2]) > 0:
                 dict_data['city'] = data[2]
+                # Call API to extract zip code if it doesn't exist
                 dict_data['zip'] = get_zip_by_city(data[2])
             else:
                 dict_data['city'] = None
@@ -51,8 +52,9 @@ def get_customer_raw_data(minioClient : object):
         Input : 
             minioClient : Minio object => MinIO client object used to authenticate and retrieve data from MinIO
         Return:
-
+            raw_customer_data : list => Customer data retrieved from MinIO
     """
+    logging.info("Collection of customer data from MinIO starting...")
     raw_customer_data = []
     # Get list of CSV objects from the companies bucket
     daily_customer_metadata = minioClient.list_objects(BUCKET_NAME)
@@ -60,7 +62,7 @@ def get_customer_raw_data(minioClient : object):
     for single_file_metadata in daily_customer_metadata:
         object_name = single_file_metadata.object_name
         try:
-            response = minioClient.get_object("companies", object_name)
+            response = minioClient.get_object(BUCKET_NAME, object_name)
             raw_data = response.read()
             raw_customer_data.append(raw_data)
 
@@ -74,10 +76,16 @@ def get_customer_raw_data(minioClient : object):
 
 def customer_data_cleaning(raw_customer_data : list):
     """
+        This function cleans and transform the customer raw data.
+        Input : 
+            raw_customer_data : list => Customer raw data
+        Return:
+            all_customers : list => Cleaned list of customer data
     """
+    logging.info("Cleaning of customer data starting...")
     all_customers = []
     for raw_data in raw_customer_data:
-        # decode th data
+        # decode th data based on the detected file encoding
         detected_encoding = chardet.detect(raw_data)
         if detected_encoding == 'ISO-8859-1':
             detected_encoding = 'UTF-8'
@@ -85,9 +93,9 @@ def customer_data_cleaning(raw_customer_data : list):
 
         #delete header line
         csv_content = csv_content.split('\n',1)[1]
-        # replace all newlines with space (this because some addresses may contain new lines instead of space)
+        # replace all newlines with space (this because some addresses may contain new lines instead of just spaces)
         csv_content = csv_content.replace('\n', ' ')
-        # regex to get each line ending with a date. Split the csv string file to extract each customer line
+        # regex to get each line ending with a date. Split the csv string file to extract each customer line.
         date_pattern = re.compile(r'(.*?\d{4}-\d{2}-\d{2})')
         csv_content_by_line=re.findall(date_pattern,csv_content)
 
