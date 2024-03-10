@@ -10,7 +10,7 @@ After that, all you need to do is to run `docker-compose build` once and then  `
 
 The docker-compose file will run MinIO, postgres and the data pipeline services.
 MinIO interface can be accessed on localhost:9001
-To visualise the postgres database data, you can download [pgAdmin software](https://www.pgadmin.org/download/). Inside the software, in the left panel, right click on `Servers > Rigister > servers...`
+To visualise the postgres database data, you can download [pgAdmin software](https://www.pgadmin.org/download/). Inside the software, in the left panel, right click on `Servers > Register > servers...`
 In `General` tab, choose a name for your databse connection, for example `data-concierge`.
 In `Connection` tab, enter the following informations:
     - Host name/address : localhost

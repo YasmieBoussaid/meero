@@ -31,6 +31,6 @@ if __name__ == "__main__":
     create_analytics_data(view_name)
     # store analytics result in MinIO
     store_analytics_data(view_name, minioClient)
-    logging.info("Process done.")
+    print("Process done.")
 
 
